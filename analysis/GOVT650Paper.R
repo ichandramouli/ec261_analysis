@@ -1,8 +1,9 @@
 library(tidyverse)
+library(here)
 #setwd('C:/Users/ianch/Desktop/Rstuff/GOVT650')
 
-EU261_data <- read_csv('EUSeats2003_2005.csv')
-canada_data <- read_csv('CanadaSeats_2017_2024.csv')
+EU261_data <- read_csv(here('data/EUSeats2003_2005.csv'))
+canada_data <- read_csv(here('data/CanadaSeats_2017_2024.csv'))
 
 #add a city pair column so we can group by it
 EU261_data <- EU261_data |> 
