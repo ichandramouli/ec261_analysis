@@ -15,6 +15,18 @@ library(tidyverse)
 EU261_data <- read_csv('../data/EUSeats2003_2005.csv')
 canada_data <- read_csv('../data/CanadaSeats_2017_2024.csv')
 
+EU261_data <- EU261_data |> 
+  mutate(city_pair=str_c(usg_apt,fg_apt,sep=''))
+
+canada_data <- canada_data |> 
+  mutate(city_pair=str_c(usg_apt,fg_apt,sep=''))
+
+#EU261 took effect on 2/17/2005
+#also want to add a EU261 in effect column. Probably create a binary variable to do that.
+#okay i think what we need to do here is:
+EU261_data <- EU261_data |> 
+  mutate(EU261_active=ifelse(((Year>2005)|(Year==2005 & Month>2)),'Yes','No'))
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
