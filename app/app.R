@@ -1,51 +1,48 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    https://shiny.posit.co/
-#
-
 library(shiny)
 library(tidyverse)
+library(arrow)
 
 #Business logic
+flt_data <- read_parquet('../data_raw/flights_merged.parquet')
 
-EU261_data <- read_csv('../data/EUSeats2003_2005.csv')
-canada_data <- read_csv('../data/CanadaSeats_2017_2024.csv')
+#need to see if we can go back and do some of this pre-processing before writing it to parquet:
 
-EU261_data <- EU261_data |> 
-  mutate(city_pair=str_c(usg_apt,fg_apt,sep=''))
+#Pre-processing steps that should only be done once:
+#Strip out the commas from thousands. This snuck in because open_dataset couldn't handle them as numeric so I had to load as string. 
+# Coerce Total column to numeric
 
-canada_data <- canada_data |> 
-  mutate(city_pair=str_c(usg_apt,fg_apt,sep=''))
+flt_data <- flt_data |> 
+  select(-Scheduled,-Chartered,-Prinary_Key) |>
+  filter(carrier!='CP' & !is.na(Total)) |>  #CP carrier from 2016-2025 had some one-off flights causing issues.
+  mutate(Total=as.numeric(str_replace(Total,',',''))) |> 
+  pivot_wider(names_from=type,values_from=Total)
 
-#EU261 took effect on 2/17/2005
-#also want to add a EU261 in effect column. Probably create a binary variable to do that.
-#okay i think what we need to do here is:
-EU261_data <- EU261_data |> 
-  mutate(EU261_active=ifelse(((Year>2005)|(Year==2005 & Month>2)),'Yes','No'))
+#create new mutated columns that will be used in data viz. 
+flt_data <- flt_data |> 
+  filter(!(is.na(Seats) | is.na(Passengers))) |> 
+  mutate(city_pair=str_c(usg_apt,fg_apt,sep='')) |> 
+  mutate(load_factor = Passengers/Seats)
+
+
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Flight Data"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            selectInput("timevar",
+                        "Select over Time Variable:",
+                        choices=c('Departures', 'Passengers', 'Seats', 'load_factor'),
+                        selected='Seats')
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+           plotOutput("timePlot")
         )
     )
 )
@@ -53,15 +50,12 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
+    output$timePlot <- renderPlot({
+        flt_data |> 
+        group_by(Year) |> 
+        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        ggplot(mapping=aes(x= Year, y= total_count))
+      
     })
 }
 
