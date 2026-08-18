@@ -5,16 +5,9 @@ library(arrow)
 #Business logic
 flt_data <- read_parquet('../data_raw/flights_merged.parquet')
 
-#need to see if we can go back and do some of this pre-processing before writing it to parquet:
 
-#Pre-processing steps that should only be done once:
-#Strip out the commas from thousands. This snuck in because open_dataset couldn't handle them as numeric so I had to load as string. 
-# Coerce Total column to numeric
 
 flt_data <- flt_data |> 
-  select(-Scheduled,-Chartered,-Prinary_Key) |>
-  filter(carrier!='CP' & !is.na(Total)) |>  #CP carrier from 2016-2025 had some one-off flights causing issues.
-  mutate(Total=as.numeric(str_replace(Total,',',''))) |> 
   pivot_wider(names_from=type,values_from=Total)
 
 #create new mutated columns that will be used in data viz. 

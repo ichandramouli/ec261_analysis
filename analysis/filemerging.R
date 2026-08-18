@@ -49,5 +49,11 @@ csv_dataset |>
   tail() |> 
   collect()
 
+csv_dataset <- csv_dataset |> 
+  select(-Scheduled,-Chartered,-Prinary_Key) |>
+  filter(carrier!='CP' & !is.na(Total)) |>  #CP carrier from 2016-2025 had some one-off flights causing issues.
+  mutate(Total=as.numeric(str_replace(Total,',',''))) |> 
+  collect()
+
 
 #write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')
