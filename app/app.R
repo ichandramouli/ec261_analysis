@@ -13,7 +13,7 @@ flt_data <- flt_data |>
 #create new mutated columns that will be used in data viz. 
 flt_data <- flt_data |> 
   filter(!(is.na(Seats) | is.na(Passengers))) |> 
-  mutate(city_pair=str_c(usg_apt,fg_apt,sep='')) |> 
+  mutate(city_pair=str_c(usg_apt,fg_apt,sep='-')) |> 
   mutate(load_factor = Passengers/Seats)
 
 
