@@ -68,6 +68,11 @@ ui <- fluidPage(
               textOutput('fg_marketAirportText'),
               tableOutput('fg_busiestTable'),
               plotOutput('fg_marketPlot')
+            ),
+            tabPanel(
+              'City Pair Drilldown',
+              textOutput('citypairText'),
+              plotOutput('citypairPlot')
             )
           )
            
@@ -201,6 +206,37 @@ server <- function(input, output) {
     
   }
   )
+  
+  output$citypairText <- renderText(paste0('Selected City Pair: ',
+                                           airport_lookup(input$us_market_choice,
+                                                          input_type = 'IATA',
+                                                          output_type='name'),'-',
+                                           airport_lookup(input$fg_market_choice,
+                                                          input_type='IATA',
+                                                          output_type='name')))
+  output$citypairPlot <- renderPlot({
+    if (input$timevar=='load_factor') {
+      cityPair_df <- flt_data |>
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
+        filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
+        group_by(data_dte,carrier) |>
+        summarise(total_count=mean(.data[[input$timevar]]))
+    } else {
+
+      cityPair_df <- flt_data |>
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
+        filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
+        group_by(data_dte,carrier) |>
+        summarise(total_count=sum(.data[[input$timevar]]))
+    }
+
+    cityPair_df |>
+      ggplot(mapping=aes(x=data_dte, y=total_count, color = carrier)) +
+      geom_line()
+
+  }
+  )
+
   
 
       
