@@ -79,7 +79,8 @@ ui <- fluidPage(
             tabPanel(
               'City Pair Drilldown',
               textOutput('citypairText'),
-              plotOutput('citypairPlot')
+              plotOutput('citypairPlot'),
+              plotOutput('marketsharePlot')
             )
           )
            
@@ -282,6 +283,21 @@ server <- function(input, output) {
 
   }
   )
+  
+  output$marketsharePlot <- renderPlot({
+    cityPair_df <- flt_data |>
+    filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
+    filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
+    group_by(data_dte,carrier) |>
+    summarise(total_count=sum(.data[[input$timevar]]))
+    
+    cityPair_df |> 
+      ggplot(mapping=aes(x="", y=total_count, fill=carrier)) +
+      geom_bar(stat='identity', width=1) +
+      coord_polar('y', start=0)
+  })
+  
+  
 
   
 
