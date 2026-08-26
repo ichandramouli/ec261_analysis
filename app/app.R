@@ -14,6 +14,7 @@ flt_data <- flt_data |>
 #create new mutated columns that will be used in data viz. 
 flt_data <- flt_data |> 
   filter(!(is.na(Seats) | is.na(Passengers))) |> 
+  filter(Departures > 4) |> 
   mutate(city_pair=str_c(usg_apt,fg_apt,sep='-')) |> 
   mutate(load_factor = Passengers/Seats,
          data_dte=mdy(data_dte)) #put this in the file merge script 
@@ -58,13 +59,19 @@ ui <- fluidPage(
           tabsetPanel(
             tabPanel(
               'Overall US Data',
+              tableOutput('us_overallbusiestTable'),
+              tableOutput('fg_overallbusiestTable'),
               plotOutput("timePlot")
             ),
             tabPanel(
-              'Market Drilldown',
+              'US Gateway Airport Drilldown',
               textOutput('us_marketAirportText'),
               tableOutput('us_busiestTable'),
-              plotOutput('us_marketPlot'),
+              plotOutput('us_marketPlot')
+              
+            ),
+            tabPanel(
+              'Foreign Market Airport Drilldown',
               textOutput('fg_marketAirportText'),
               tableOutput('fg_busiestTable'),
               plotOutput('fg_marketPlot')
@@ -82,6 +89,45 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  output$us_overallbusiestTable <- renderTable({
+    if (input$timevar=='load_factor') {
+      us_busiest_df <- flt_data |> 
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
+        group_by(usg_apt) |> 
+        summarise(total_count=mean(.data[[input$timevar]])) |> 
+        arrange(desc(total_count)) |> 
+        head(10)
+    } else {
+      
+      us_busiest_df <- flt_data |> 
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
+        group_by(usg_apt) |> 
+        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        arrange(desc(total_count)) |> 
+        head(10)
+      
+    }})
+  
+  output$fg_overallbusiestTable <- renderTable({
+    if (input$timevar=='load_factor') {
+      us_busiest_df <- flt_data |> 
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
+        group_by(fg_apt) |> 
+        summarise(total_count=mean(.data[[input$timevar]])) |> 
+        arrange(desc(total_count)) |> 
+        head(10)
+    } else {
+      
+      us_busiest_df <- flt_data |> 
+        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
+        group_by(fg_apt) |> 
+        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        arrange(desc(total_count)) |> 
+        head(10)
+      
+    }})
+  
   output$timePlot <- renderPlot({
     
     if (input$timevar=='load_factor') {
