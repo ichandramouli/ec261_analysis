@@ -39,6 +39,13 @@ my_schema <- schema(
 
 csv_dataset <- open_dataset(csv_dir, format='csv', schema=my_schema, skip=1)
 
+csv_dataset <- csv_dataset |> 
+  select(-Scheduled,-Chartered,-Prinary_Key) |>
+  filter(carrier!='CP' & !is.na(Total)) |>  #CP carrier from 2016-2025 had some one-off flights causing issues.
+  mutate(Total=as.numeric(str_replace(Total,',','')),
+         data_dte=mdy(data_dte)) |> 
+  collect()
+
 #test to make sure everything is in there and looking fine
 csv_dataset |> 
 head()|>
@@ -49,11 +56,7 @@ csv_dataset |>
   tail() |> 
   collect()
 
-csv_dataset <- csv_dataset |> 
-  select(-Scheduled,-Chartered,-Prinary_Key) |>
-  filter(carrier!='CP' & !is.na(Total)) |>  #CP carrier from 2016-2025 had some one-off flights causing issues.
-  mutate(Total=as.numeric(str_replace(Total,',',''))) |> 
-  collect()
 
 
-#write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')
+
+write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')

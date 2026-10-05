@@ -16,9 +16,7 @@ flt_data <- flt_data |>
   filter(!(is.na(Seats) | is.na(Passengers))) |> 
   filter(Departures > 4) |> 
   mutate(city_pair=str_c(usg_apt,fg_apt,sep='-')) |> 
-  mutate(load_factor = Passengers/Seats,
-         data_dte=mdy(data_dte)) #put this in the file merge script 
-
+  mutate(load_factor = Passengers/Seats)
 
 
 
