@@ -32,7 +32,8 @@ ui <- fluidPage(
                          'Select Start and End Year',
                          min=1990,
                          max=2025,
-                      value=c(2020,2024)),
+                      value=c(2020,2024),
+                      sep=''),
           
             selectInput("timevar",
                         label="Select over Time Variable:",
