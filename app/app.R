@@ -1,4 +1,5 @@
 library(shiny)
+library(bslib)
 library(tidyverse)
 library(arrow)
 library(airportr)
@@ -22,7 +23,7 @@ flt_data <- flt_data |>
 
 ui <- fluidPage(
 
- 
+    theme = bs_theme(version=5,bootswatch='lux'),
     titlePanel("Flight Data"),
 
      
