@@ -19,7 +19,15 @@ flt_data <- flt_data |>
   mutate(city_pair=str_c(usg_apt,fg_apt,sep='-')) |> 
   mutate(load_factor = Passengers/Seats)
 
+pretty_variable_names <- c(
+  Seats = 'Number of Seats',
+  Passengers = 'Passengers',
+  load_factor = 'Load Factor',
+  Departures = 'Departures',
+  carrier = 'Airline'
+)
 
+options(shiny.useragg=TRUE)
 
 ui <- fluidPage(
 
@@ -80,7 +88,8 @@ ui <- fluidPage(
               'City Pair Drilldown',
               textOutput('citypairText'),
               plotOutput('citypairPlot'),
-              plotOutput('marketsharePlot')
+              plotOutput('marketsharePlot'),
+              tableOutput('marketshareTable')
             )
           )
            
@@ -104,7 +113,7 @@ server <- function(input, output) {
       us_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         group_by(usg_apt) |> 
-        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        summarise(total_count=as.integer(sum(.data[[input$timevar]]))) |> 
         arrange(desc(total_count)) |> 
         head(10)
       
@@ -123,7 +132,7 @@ server <- function(input, output) {
       us_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         group_by(fg_apt) |> 
-        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        summarise(total_count=as.integer(sum(.data[[input$timevar]]))) |> 
         arrange(desc(total_count)) |> 
         head(10)
       
@@ -146,7 +155,10 @@ server <- function(input, output) {
     
        macroplot_df |> 
          ggplot(mapping=aes(x=data_dte, y=total_count)) +
-         geom_line()
+         geom_line() +
+         labs(x='Date',
+              y=pretty_variable_names[input$timevar]) +
+         theme_minimal()
      })
   
   output$us_marketAirportText <- renderText(paste0('Selected US Airport: ', 
@@ -168,7 +180,7 @@ server <- function(input, output) {
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         filter(usg_apt==input$us_market_choice) |> 
         group_by(fg_apt) |> 
-        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        summarise(total_count=as.integer(sum(.data[[input$timevar]]))) |> 
         arrange(desc(total_count)) |> 
         head(10)
       
@@ -195,7 +207,10 @@ server <- function(input, output) {
     
     us_marketplot_df |> 
       ggplot(mapping=aes(x=data_dte, y=total_count)) +
-      geom_line()
+      geom_line() +
+      labs(x='Date',
+           y=pretty_variable_names[input$timevar]) +
+      theme_minimal()
     
   }
   )
@@ -222,7 +237,7 @@ server <- function(input, output) {
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         filter(fg_apt==input$fg_market_choice) |> 
         group_by(usg_apt) |> 
-        summarise(total_count=sum(.data[[input$timevar]])) |> 
+        summarise(total_count=as.integer(sum(.data[[input$timevar]]))) |> 
         arrange(desc(total_count)) |> 
         head(10)
       
@@ -249,7 +264,10 @@ server <- function(input, output) {
     
     fg_marketplot_df |> 
       ggplot(mapping=aes(x=data_dte, y=total_count)) +
-      geom_line()
+      geom_line() +
+      labs(x='Date', y=pretty_variable_names[input$timevar]) +
+      scale_color_brewer(palette='Dark2') +
+      theme_minimal()
     
   }
   )
@@ -279,10 +297,25 @@ server <- function(input, output) {
 
     cityPair_df |>
       ggplot(mapping=aes(x=data_dte, y=total_count, color = carrier)) +
-      geom_line()
+      geom_line() +
+      labs(x='Date',
+           y=pretty_variable_names[input$timevar],
+           color='Airline') +
+      scale_color_brewer(palette='Dark2') +
+      theme_minimal()
 
   }
   )
+  
+  output$marketshareTable <- renderTable({
+   flt_data |>
+      filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
+      filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
+      group_by(data_dte,carrier) |>
+      summarise(total_count=sum(.data[[input$timevar]]))
+    
+    
+  })
   
   output$marketsharePlot <- renderPlot({
     cityPair_df <- flt_data |>
@@ -293,8 +326,12 @@ server <- function(input, output) {
     
     cityPair_df |> 
       ggplot(mapping=aes(x="", y=total_count, fill=carrier)) +
-      geom_bar(stat='identity', width=1) +
-      coord_polar('y', start=0)
+      geom_col(color=NA) +
+      coord_polar('y', start=0) +
+      labs(title='Market Share',
+           fill='Airline') +
+      theme_void() +
+      scale_fill_brewer(palette='Dark2') 
   })
   
   

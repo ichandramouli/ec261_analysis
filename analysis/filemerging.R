@@ -59,4 +59,4 @@ csv_dataset |>
 
 
 
-write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')
+#write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')
