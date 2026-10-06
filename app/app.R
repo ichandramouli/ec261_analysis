@@ -293,16 +293,16 @@ server <- function(input, output) {
         filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
         group_by(data_dte,carrier) |>
         summarise(total_count=sum(.data[[input$timevar]])) |> 
-        ungroup()
+        ungroup() |> 
+        complete(data_dte=seq(min(data_dte),max(data_dte),by='month'),carrier,fill=list(total_count=0))
     }
 
     cityPair_df |>
-      complete(data_dte=seq(min(data_dte),max(data_dte),by='month'),carrier,fill=list(total_count=0)) |> 
       ggplot(mapping=aes(x=data_dte, y=total_count, fill = carrier)) +
       geom_area() +
       labs(x='Date',
            y=pretty_variable_names[input$timevar],
-           color='Airline') +
+           fill='Airline') +
       scale_color_brewer(palette='Dark2') +
       theme_minimal()
 
