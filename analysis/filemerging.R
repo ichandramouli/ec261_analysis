@@ -1,5 +1,6 @@
 library(tidyverse)
 library(arrow)
+library(airportr)
 
 
 #I realized that putting in all these files of this size would likely 
@@ -56,7 +57,25 @@ csv_dataset |>
   tail() |> 
   collect()
 
+is_valid_airport <- function(code) {
+  tryCatch({
+    # Attempt the lookup; if it succeeds, return TRUE
+    airport_lookup(code)
+    TRUE
+  }, error = function(e) {
+    # If it errors out, return FALSE
+    FALSE
+  })
+}
 
+unique_apts <- unique(c(csv_dataset$usg_apt, csv_dataset$fg_apt))
+
+valid_mask <- map_lgl(unique_apts, is_valid_airport)
+
+valid_codes <- unique_apts[valid_mask]
+
+csv_dataset <- csv_dataset |> 
+  filter(usg_apt %in% valid_codes & fg_apt %in% valid_codes)
 
 
 #write_parquet(csv_dataset, '../data_raw/flights_merged.parquet')
