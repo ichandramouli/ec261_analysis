@@ -84,7 +84,7 @@ ui <- fluidPage(
               ),
             tabPanel(
               title='US Gateway Airport Drilldown',
-              fluidRow(column(12,textOutput('us_marketAirportText'))),
+              fluidRow(column(12,uiOutput('us_marketAirportText'))),
               fluidRow(column(12,textOutput('us_marketPlotHeader'))),
               fluidRow(column(12,plotOutput('us_marketPlot'))),
               fluidRow(column(12,textOutput('us_busiestTableHeader'))),
@@ -181,10 +181,10 @@ server <- function(input, output) {
          theme_minimal()
      })
   
-  output$us_marketAirportText <- renderText(paste0('Selected US Airport: ', 
+  output$us_marketAirportText <- renderUI(strong(paste0('Selected US Airport: ', 
                                                 airport_lookup(input$us_market_choice, 
                                                                input_type='IATA', 
-                                                               output_type='name')))
+                                                               output_type='name'))))
   
   output$us_busiestTableHeader <- renderText(paste0('Top 10 International Destinations from ', 
                                                     input$us_market_choice,' by ', 
