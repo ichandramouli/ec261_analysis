@@ -84,7 +84,7 @@ ui <- fluidPage(
               ),
             tabPanel(
               title='US Gateway Airport Drilldown',
-              fluidRow(column(12,uiOutput('us_marketAirportText'))),
+              fluidRow(column(12,textOutput('us_marketAirportText'))),
               fluidRow(column(12,textOutput('us_marketPlotHeader'))),
               fluidRow(column(12,plotOutput('us_marketPlot'))),
               fluidRow(column(12,textOutput('us_busiestTableHeader'))),
@@ -181,10 +181,10 @@ server <- function(input, output) {
          theme_minimal()
      })
   
-  output$us_marketAirportText <- renderUI(strong(paste0('Selected US Airport: ', 
+  output$us_marketAirportText <- renderText(paste0('Selected US Airport: ', 
                                                 airport_lookup(input$us_market_choice, 
                                                                input_type='IATA', 
-                                                               output_type='name'))))
+                                                               output_type='name')))
   
   output$us_busiestTableHeader <- renderText(paste0('Top 10 International Destinations from ', 
                                                     input$us_market_choice,' by ', 
@@ -199,11 +199,12 @@ server <- function(input, output) {
         group_by(fg_apt) |> 
         summarise(total_count=as.integer(sum(.data[[input$timevar]]))) |> 
         arrange(desc(total_count)) |> 
-        head(10)
+        ungroup() |> 
+        head(10) 
       
     
     colnames(us_busiest_df) <- c('Foreign Airport',pretty_variable_names[input$timevar])
-    us_busiest_df
+    us_busiest_df 
   }
     
   )
@@ -288,10 +289,13 @@ server <- function(input, output) {
   output$citypairText <- renderText(paste0('Selected City Pair: ',
                                            airport_lookup(input$us_market_choice,
                                                           input_type = 'IATA',
-                                                          output_type='name'),'-',
+                                                          output_type='city'),
+                                           ' (',input$us_market_choice,')',
+                                           ' - ',
                                            airport_lookup(input$fg_market_choice,
                                                           input_type='IATA',
-                                                          output_type='name')))
+                                                          output_type='city'),
+                                           ' (',input$fg_market_choice,')'))
  
   output$citypairPlotHeader <- renderText(paste0(input$us_market_choice,'-',
                                                  input$fg_market_choice,' ',
