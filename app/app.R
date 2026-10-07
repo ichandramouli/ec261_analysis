@@ -32,7 +32,7 @@ options(shiny.useragg=TRUE)
 ui <- fluidPage(
 
     theme = bs_theme(version=5,bootswatch='lux'),
-    titlePanel("Flight Data"),
+ titlePanel("International Passenger Air Traffic Data"),
 
      
     sidebarLayout(
@@ -66,30 +66,40 @@ ui <- fluidPage(
         mainPanel(
           tabsetPanel(
             tabPanel(
-              'Overall US Data',
-              tableOutput('us_overallbusiestTable'),
-              tableOutput('fg_overallbusiestTable'),
-              plotOutput("timePlot")
-            ),
+              title='Overall US Data',
+              fluidRow(plotOutput("timePlot")),
+              fluidRow(
+                column(width=4,
+              tableOutput('us_overallbusiestTable')),
+              column(width=4,
+              tableOutput('fg_overallbusiestTable'))
+              )
+              ),
             tabPanel(
-              'US Gateway Airport Drilldown',
-              textOutput('us_marketAirportText'),
-              tableOutput('us_busiestTable'),
-              plotOutput('us_marketPlot')
+              title='US Gateway Airport Drilldown',
+              fluidRow(column(12,textOutput('us_marketAirportText'))),
+              fluidRow(column(12,plotOutput('us_marketPlot'))),
+              fluidRow(column(12,tableOutput('us_busiestTable')))
+              
               
             ),
             tabPanel(
               'Foreign Market Airport Drilldown',
-              textOutput('fg_marketAirportText'),
-              tableOutput('fg_busiestTable'),
-              plotOutput('fg_marketPlot')
+              fluidRow(
+                column(12,textOutput('fg_marketAirportText'))
+              ),
+              
+              fluidRow(column(12, plotOutput('fg_marketPlot'))),
+              fluidRow(
+                column(12,tableOutput('fg_busiestTable'))
+              ),
             ),
             tabPanel(
               'City Pair Drilldown',
-              textOutput('citypairText'),
-              plotOutput('citypairPlot'),
-              plotOutput('marketsharePlot'),
-              tableOutput('marketshareTable')
+              fluidRow(column(12,textOutput('citypairText'))
+                       ),
+              fluidRow(column(12,plotOutput('citypairPlot'))),
+              fluidRow(column(12,plotOutput('citytrendlinePlot')))
             )
           )
            
@@ -117,7 +127,12 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }})
+    }
+    
+    colnames(us_busiest_df) <- c('US Airport',pretty_variable_names[input$timevar])
+    us_busiest_df 
+    
+    })
   
   output$fg_overallbusiestTable <- renderTable({
     if (input$timevar=='load_factor') {
@@ -136,7 +151,10 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }})
+    }
+    colnames(us_busiest_df) <- c('Foreign Airport',pretty_variable_names[input$timevar])
+    us_busiest_df 
+    })
   
   output$timePlot <- renderPlot({
     
@@ -185,6 +203,7 @@ server <- function(input, output) {
         head(10)
       
     }
+    colnames(us_busiest_df) <- c('Foreign Airport',pretty_variable_names[input$timevar])
     us_busiest_df
   }
     
@@ -242,6 +261,7 @@ server <- function(input, output) {
         head(10)
       
     }
+    colnames(fg_busiest_df) <- c('US Airport',pretty_variable_names[input$timevar])
     fg_busiest_df
   })
   
@@ -309,31 +329,25 @@ server <- function(input, output) {
   }
   )
   
-  output$marketshareTable <- renderTable({
-   flt_data |>
+ 
+  
+  output$citytrendlinePlot <- renderPlot({
+    cityPair_df <- flt_data |>
       filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
       filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
       group_by(data_dte,carrier) |>
-      summarise(total_count=sum(.data[[input$timevar]]))
-    
-    
-  })
-  
-  output$marketsharePlot <- renderPlot({
-    cityPair_df <- flt_data |>
-    filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
-    filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
-    group_by(data_dte,carrier) |>
-    summarise(total_count=sum(.data[[input$timevar]]))
+      summarise(total_count=sum(.data[[input$timevar]])) |> 
+      ungroup() |> 
+      complete(data_dte=seq(min(data_dte),max(data_dte),by='month'),carrier,fill=list(total_count=0))
     
     cityPair_df |> 
-      ggplot(mapping=aes(x="", y=total_count, fill=carrier)) +
-      geom_col(color=NA) +
-      coord_polar('y', start=0) +
-      labs(title='Market Share',
-           fill='Airline') +
-      theme_void() +
-      scale_fill_brewer(palette='Dark2') 
+      ggplot(mapping=aes(x=data_dte, y=total_count, color=carrier)) +
+      geom_line() +
+      labs(x='Date',
+           y=pretty_variable_names[input$timevar],
+           color='Airline') + 
+      theme_minimal() +
+      scale_color_brewer(palette='Dark2') 
   })
   
   
