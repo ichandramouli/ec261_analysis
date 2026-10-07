@@ -46,7 +46,7 @@ ui <- fluidPage(
           
             selectInput("timevar",
                         label="Select over Time Variable:",
-                        choices=c('Departures', 'Passengers', 'Seats', 'load_factor'),
+                        choices=c('Departures', 'Passengers', 'Seats'),
                         selected='Seats'),
           
           selectizeInput(inputId='us_market_choice',
@@ -127,14 +127,6 @@ server <- function(input, output) {
   })
   
   output$us_overallbusiestTable <- renderTable({
-    if (input$timevar=='load_factor') {
-      us_busiest_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        group_by(usg_apt) |> 
-        summarise(total_count=mean(.data[[input$timevar]])) |> 
-        arrange(desc(total_count)) |> 
-        head(10)
-    } else {
       
       us_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
@@ -143,7 +135,7 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }
+    
     
     colnames(us_busiest_df) <- c('US Airport',pretty_variable_names[input$timevar])
     us_busiest_df 
@@ -155,15 +147,7 @@ server <- function(input, output) {
   })
   
   output$fg_overallbusiestTable <- renderTable({
-    if (input$timevar=='load_factor') {
-      us_busiest_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        group_by(fg_apt) |> 
-        summarise(total_count=mean(.data[[input$timevar]])) |> 
-        arrange(desc(total_count)) |> 
-        head(10)
-    } else {
-      
+    
       us_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         group_by(fg_apt) |> 
@@ -171,7 +155,7 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }
+    
     colnames(us_busiest_df) <- c('Foreign Airport',pretty_variable_names[input$timevar])
     us_busiest_df 
     })
@@ -182,18 +166,12 @@ server <- function(input, output) {
   
   output$timePlot <- renderPlot({
     
-    if (input$timevar=='load_factor') {
-      macroplot_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        group_by(data_dte) |> 
-        summarise(total_count=mean(.data[[input$timevar]]))
-    } else {
       
       macroplot_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         group_by(data_dte) |> 
         summarise(total_count=sum(.data[[input$timevar]]))
-    }
+    
     
        macroplot_df |> 
          ggplot(mapping=aes(x=data_dte, y=total_count)) +
@@ -213,15 +191,7 @@ server <- function(input, output) {
                                                     input$timevar))
   
   output$us_busiestTable <- renderTable({
-    if (input$timevar=='load_factor') {
-      us_busiest_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        filter(usg_apt==input$us_market_choice) |> 
-        group_by(fg_apt) |> 
-        summarise(total_count=mean(.data[[input$timevar]])) |> 
-        arrange(desc(total_count)) |> 
-        head(10)
-    } else {
+     
       
       us_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
@@ -231,7 +201,7 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }
+    
     colnames(us_busiest_df) <- c('Foreign Airport',pretty_variable_names[input$timevar])
     us_busiest_df
   }
@@ -244,20 +214,14 @@ server <- function(input, output) {
   })
   
   output$us_marketPlot <- renderPlot({
-    if (input$timevar=='load_factor') {
-      us_marketplot_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        filter(usg_apt==input$us_market_choice) |> 
-        group_by(data_dte) |> 
-        summarise(total_count=mean(.data[[input$timevar]]))
-    } else {
+    
       
       us_marketplot_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         filter(usg_apt==input$us_market_choice) |> 
         group_by(data_dte) |> 
         summarise(total_count=sum(.data[[input$timevar]]))
-    }
+    
     
     us_marketplot_df |> 
       ggplot(mapping=aes(x=data_dte, y=total_count)) +
@@ -281,15 +245,7 @@ server <- function(input, output) {
   )
   
   output$fg_busiestTable <- renderTable({
-    if (input$timevar=='load_factor') {
-      fg_busiest_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        filter(fg_apt==input$fg_market_choice) |> 
-        group_by(usg_apt) |> 
-        summarise(total_count=mean(.data[[input$timevar]])) |> 
-        arrange(desc(total_count)) |> 
-        head(10)
-    } else {
+    
       
       fg_busiest_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
@@ -299,7 +255,7 @@ server <- function(input, output) {
         arrange(desc(total_count)) |> 
         head(10)
       
-    }
+    
     colnames(fg_busiest_df) <- c('US Airport',pretty_variable_names[input$timevar])
     fg_busiest_df
   })
@@ -310,20 +266,14 @@ server <- function(input, output) {
   })
   
   output$fg_marketPlot <- renderPlot({
-    if (input$timevar=='load_factor') {
-      fg_marketplot_df <- flt_data |> 
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
-        filter(fg_apt==input$fg_market_choice) |> 
-        group_by(data_dte) |> 
-        summarise(total_count=mean(.data[[input$timevar]]))
-    } else {
+   
       
       fg_marketplot_df <- flt_data |> 
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |> 
         filter(fg_apt==input$fg_market_choice) |> 
         group_by(data_dte) |> 
         summarise(total_count=sum(.data[[input$timevar]]))
-    }
+    
     
     fg_marketplot_df |> 
       ggplot(mapping=aes(x=data_dte, y=total_count)) +
@@ -351,13 +301,7 @@ server <- function(input, output) {
   
    
   output$citypairPlot <- renderPlot({
-    if (input$timevar=='load_factor') {
-      cityPair_df <- flt_data |>
-        filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
-        filter(usg_apt == input$us_market_choice & fg_apt==input$fg_market_choice) |>
-        group_by(data_dte,carrier) |>
-        summarise(total_count=mean(.data[[input$timevar]]))
-    } else {
+    
 
       cityPair_df <- flt_data |>
         filter(Year >= input$date_range[[1]] & Year <= input$date_range[[2]]) |>
@@ -366,7 +310,7 @@ server <- function(input, output) {
         summarise(total_count=sum(.data[[input$timevar]])) |> 
         ungroup() 
         
-    }
+    
     
     validate(need(nrow(cityPair_df)>0, 'No observed flights between the city pairs during the time period')) 
     
