@@ -5,7 +5,7 @@ library(arrow)
 library(airportr)
 
 #Business logic
-flt_data <- read_parquet('../data_raw/flights_merged.parquet')
+flt_data <- read_parquet('data_raw/flights_merged.parquet')
 
 
 
