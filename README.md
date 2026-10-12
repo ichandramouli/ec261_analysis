@@ -84,5 +84,3 @@ divert to the same airport multiple times) rather than a regularly scheduled fli
 
 
 
-## Usage
-Demonstration Coming Soon
