@@ -40,18 +40,21 @@ time period.
 ![_Overall Tab_](images/overall_screenshot.png)
 
 <br>
+
 **US Gateway Airport Drilldown** - showcases a time trend and top 10
 foreign airports by the chosen metric over the time period. 
 
 ![_US Gateway Tab_](images/us_screenshot.png)
 
 <br>
+
 **Foreign Airport Drilldown** - showcases a time trend and top 10 US origin markets
 by the chosen metric over the time period. 
 
 ![_Foreign Gateway Tab_](images/fg_screenshot.png)
 
 <br>
+
 **City Pair Drilldown** - showcases a time trend of the metric between the selected 
 US and Foreign Airports over the time period in two visualizations:
 
