@@ -37,18 +37,29 @@ _Numbers are round-trip for a given route (For example, including both Washingto
 and foreign destination markets by the chosen metric cumulatively over the 
 time period. 
 
+![_Overall Tab_](images/overall_screenshot.png)
+
+<br>
 **US Gateway Airport Drilldown** - showcases a time trend and top 10
 foreign airports by the chosen metric over the time period. 
 
+![_US Gateway Tab_](images/us_screenshot.png)
+
+<br>
 **Foreign Airport Drilldown** - showcases a time trend and top 10 US origin markets
 by the chosen metric over the time period. 
 
+![_Foreign Gateway Tab_](images/fg_screenshot.png)
+
+<br>
 **City Pair Drilldown** - showcases a time trend of the metric between the selected 
 US and Foreign Airports over the time period in two visualizations:
 
 - An area plot showing total numbers for the metric as well as airline market share
 - A line plot to visualize capacity trends for the chosen metric broken down by individual airline over time
 
+![_City Pair Screenshot_](images/citypair_screenshot.png)
+<br>
 
 ### Data Source
 
